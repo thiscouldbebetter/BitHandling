@@ -22,6 +22,12 @@ export class ByteStream
 		return new ByteStream(bytes);
 	}
 
+	byteIndexSet(value: number): ByteStream
+	{
+		this.byteIndexCurrent = value;
+		return this;
+	}
+
 	hasMoreBytes(): boolean
 	{
 		return (this.byteIndexCurrent < this.numberOfBytesTotal);

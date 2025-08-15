@@ -12,6 +12,10 @@ var ThisCouldBeBetter;
             static fromBytes(bytes) {
                 return new ByteStream(bytes);
             }
+            byteIndexSet(value) {
+                this.byteIndexCurrent = value;
+                return this;
+            }
             hasMoreBytes() {
                 return (this.byteIndexCurrent < this.numberOfBytesTotal);
             }
