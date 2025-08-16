@@ -13,7 +13,9 @@ var ThisCouldBeBetter;
                 this.bitOffsetWithinByteCurrent = 0;
                 this.byteCurrent = 0;
             }
-            // static methods
+            static fromBytes(bytes) {
+                return new BitStream(BitHandling.ByteStream.fromBytes(bytes));
+            }
             static convertNumberToBitString(numberToConvert) {
                 var returnValue = "";
                 var numberOfBitsNeeded = Math.ceil(Math.log(numberToConvert + 1)
@@ -46,9 +48,9 @@ var ThisCouldBeBetter;
                 }
                 return returnValue;
             }
-            readNumber(numberOfBitsInNumber) {
+            readInteger(numberOfBitsInInteger) {
                 var returnValue = 0;
-                for (var i = 0; i < numberOfBitsInNumber; i++) {
+                for (var i = 0; i < numberOfBitsInInteger; i++) {
                     var bitRead = this.readBit();
                     returnValue |= (bitRead << i);
                 }
@@ -63,12 +65,14 @@ var ThisCouldBeBetter;
                     this.bitOffsetWithinByteCurrent = 0;
                     this.byteCurrent = 0;
                 }
+                return this;
             }
-            writeNumber(numberToWrite, numberOfBitsToUse) {
+            writeInteger(integerToWrite, numberOfBitsToUse) {
                 for (var b = 0; b < numberOfBitsToUse; b++) {
-                    var bitValue = (numberToWrite >> b) & 1;
+                    var bitValue = (integerToWrite >> b) & 1;
                     this.writeBit(bitValue);
                 }
+                return this;
             }
         }
         BitStream.BitsPerByte = 8;

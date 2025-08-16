@@ -25,7 +25,10 @@ export class BitStream
 		this.byteCurrent = 0;
 	}
 
-	// static methods
+	static fromBytes(bytes: number[]): BitStream
+	{
+		return new BitStream(ByteStream.fromBytes(bytes) );
+	}
 
 	static convertNumberToBitString(numberToConvert: number)
 	{
@@ -52,7 +55,7 @@ export class BitStream
 
 	// instance methods
 
-	close()
+	close(): void
 	{
 		if (this.bitOffsetWithinByteCurrent > 0)
 		{
@@ -60,7 +63,7 @@ export class BitStream
 		}
 	}
 
-	readBit()
+	readBit(): number
 	{
 		this.byteCurrent = this.byteStream.peekByteCurrent();
 		var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
@@ -78,11 +81,11 @@ export class BitStream
 		return returnValue;
 	}
 
-	readNumber(numberOfBitsInNumber: number)
+	readInteger(numberOfBitsInInteger: number): number
 	{
 		var returnValue = 0;
 
-		for (var i = 0; i < numberOfBitsInNumber; i++) {
+		for (var i = 0; i < numberOfBitsInInteger; i++) {
 			var bitRead = this.readBit();
 			returnValue |= (bitRead << i);
 		}
@@ -90,7 +93,7 @@ export class BitStream
 		return returnValue;
 	}
 
-	writeBit(bitToWrite: number)
+	writeBit(bitToWrite: number): BitStream
 	{
 		this.byteCurrent |= (bitToWrite << this.bitOffsetWithinByteCurrent);
 		this.bitOffsetWithinByteCurrent++;
@@ -102,15 +105,18 @@ export class BitStream
 			this.bitOffsetWithinByteCurrent = 0;
 			this.byteCurrent = 0;
 		}
+
+		return this;
 	}
 
-	writeNumber(numberToWrite: number, numberOfBitsToUse: number)
+	writeInteger(integerToWrite: number, numberOfBitsToUse: number): BitStream
 	{
 		for (var b = 0; b < numberOfBitsToUse; b++)
 		{
-			var bitValue = (numberToWrite >> b) & 1;
+			var bitValue = (integerToWrite >> b) & 1;
 			this.writeBit(bitValue);
 		}
+		return this;
 	}
 }
 
