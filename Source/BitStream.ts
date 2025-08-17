@@ -80,15 +80,20 @@ export class BitStream
 		}
 	}
 
+	hasMoreBits(): boolean
+	{
+		return this.byteStream.hasMoreBytes();
+	}
+
 	readBit(): number
 	{
 		this.byteCurrent = this.byteStream.peekByteCurrent();
-		var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
+		var returnValue =
+			(this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
 		this.bitOffsetWithinByteCurrent++;
 
 		if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte)
 		{
-			this.byteIndexIncrement();
 			this.bitOffsetWithinByteCurrent = 0;
 			if (this.byteStream.hasMoreBytes())
 			{

@@ -47,12 +47,14 @@ var ThisCouldBeBetter;
                     this.byteStream.writeByte(this.byteCurrent);
                 }
             }
+            hasMoreBits() {
+                return this.byteStream.hasMoreBytes();
+            }
             readBit() {
                 this.byteCurrent = this.byteStream.peekByteCurrent();
                 var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
                 this.bitOffsetWithinByteCurrent++;
                 if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte) {
-                    this.byteIndexIncrement();
                     this.bitOffsetWithinByteCurrent = 0;
                     if (this.byteStream.hasMoreBytes()) {
                         this.byteCurrent = this.byteStream.readByte();
