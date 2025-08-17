@@ -9,7 +9,6 @@ var ThisCouldBeBetter;
                     byteStream = new BitHandling.ByteStream([]);
                 }
                 this.byteStream = byteStream;
-                this.byteOffset = 0;
                 this.bitOffsetWithinByteCurrent = 0;
                 this.byteCurrent = 0;
             }
@@ -30,6 +29,19 @@ var ThisCouldBeBetter;
                 return returnValue;
             }
             // instance methods
+            byteIndexCurrent() {
+                return this.byteStream.byteIndexCurrent;
+            }
+            byteIndexIncrement() {
+                this.byteStream.readByte();
+                this.bitOffsetWithinByteCurrent = 0;
+                return this;
+            }
+            byteIndexSet(value) {
+                this.byteStream.byteIndexSet(value);
+                this.bitOffsetWithinByteCurrent = 0;
+                return this;
+            }
             close() {
                 if (this.bitOffsetWithinByteCurrent > 0) {
                     this.byteStream.writeByte(this.byteCurrent);
@@ -40,7 +52,7 @@ var ThisCouldBeBetter;
                 var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
                 this.bitOffsetWithinByteCurrent++;
                 if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte) {
-                    this.byteOffset++;
+                    this.byteIndexIncrement();
                     this.bitOffsetWithinByteCurrent = 0;
                     if (this.byteStream.hasMoreBytes()) {
                         this.byteCurrent = this.byteStream.readByte();
@@ -48,7 +60,15 @@ var ThisCouldBeBetter;
                 }
                 return returnValue;
             }
-            readInteger(numberOfBitsInInteger) {
+            readByte() {
+                // todo - Check alignment.
+                return this.byteStream.readByte();
+            }
+            readBytes(bytesCount) {
+                // todo - Check alignment.
+                return this.byteStream.readBytes(bytesCount);
+            }
+            readIntegerFromBits(numberOfBitsInInteger) {
                 var returnValue = 0;
                 for (var i = 0; i < numberOfBitsInInteger; i++) {
                     var bitRead = this.readBit();
@@ -61,7 +81,6 @@ var ThisCouldBeBetter;
                 this.bitOffsetWithinByteCurrent++;
                 if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte) {
                     this.byteStream.writeByte(this.byteCurrent);
-                    this.byteOffset++;
                     this.bitOffsetWithinByteCurrent = 0;
                     this.byteCurrent = 0;
                 }

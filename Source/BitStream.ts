@@ -8,7 +8,6 @@ export class BitStream
 	static NaturalLogarithmOf2 = Math.log(2);
 
 	byteStream: ByteStream;
-	byteOffset: number;
 	bitOffsetWithinByteCurrent: number;
 	byteCurrent: number;
 
@@ -20,7 +19,6 @@ export class BitStream
 		}
 
 		this.byteStream = byteStream;
-		this.byteOffset = 0;
 		this.bitOffsetWithinByteCurrent = 0;
 		this.byteCurrent = 0;
 	}
@@ -55,6 +53,25 @@ export class BitStream
 
 	// instance methods
 
+	byteIndexCurrent(): number
+	{
+		return this.byteStream.byteIndexCurrent;
+	}
+
+	byteIndexIncrement(): BitStream
+	{
+		this.byteStream.readByte();
+		this.bitOffsetWithinByteCurrent = 0;
+		return this;
+	}
+
+	byteIndexSet(value: number): BitStream
+	{
+		this.byteStream.byteIndexSet(value);
+		this.bitOffsetWithinByteCurrent = 0;
+		return this;
+	}
+
 	close(): void
 	{
 		if (this.bitOffsetWithinByteCurrent > 0)
@@ -71,7 +88,7 @@ export class BitStream
 
 		if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte)
 		{
-			this.byteOffset++;
+			this.byteIndexIncrement();
 			this.bitOffsetWithinByteCurrent = 0;
 			if (this.byteStream.hasMoreBytes())
 			{
@@ -81,7 +98,19 @@ export class BitStream
 		return returnValue;
 	}
 
-	readInteger(numberOfBitsInInteger: number): number
+	readByte(): number
+	{
+		// todo - Check alignment.
+		return this.byteStream.readByte();
+	}
+
+	readBytes(bytesCount: number): number[]
+	{
+		// todo - Check alignment.
+		return this.byteStream.readBytes(bytesCount);
+	}
+
+	readIntegerFromBits(numberOfBitsInInteger: number): number
 	{
 		var returnValue = 0;
 
@@ -101,7 +130,6 @@ export class BitStream
 		if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte)
 		{
 			this.byteStream.writeByte(this.byteCurrent);
-			this.byteOffset++;
 			this.bitOffsetWithinByteCurrent = 0;
 			this.byteCurrent = 0;
 		}
