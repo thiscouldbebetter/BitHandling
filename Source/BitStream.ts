@@ -85,6 +85,24 @@ export class BitStream
 		return this.byteStream.hasMoreBytes();
 	}
 
+	peekBits(numberOfBitsToPeek: number): string
+	{
+		var byteIndexCurrentToRestore =
+			this.byteStream.byteIndexCurrent;
+		var bitOffsetWithinByteCurrentToRestore =
+			this.bitOffsetWithinByteCurrent;
+
+		var bitsPeekedAsString =
+			this.readBitsAsString(numberOfBitsToPeek);
+
+		this.byteStream.byteIndexCurrent =
+			byteIndexCurrentToRestore;
+		this.bitOffsetWithinByteCurrent =
+			bitOffsetWithinByteCurrentToRestore;
+
+		return bitsPeekedAsString;
+	}
+
 	readBit(): number
 	{
 		this.byteCurrent = this.byteStream.peekByteCurrent();
@@ -105,6 +123,26 @@ export class BitStream
 		return returnValue;
 	}
 
+	readBits(numberOfBitsToRead: number): number[]
+	{
+		var bitsRead = [];
+
+		for (var i = 0; i < numberOfBitsToRead; i++)
+		{
+			var bitRead = this.readBit();
+			bitsRead.push(bitRead);
+		}
+
+		return bitsRead;
+	}
+
+	readBitsAsString(numberOfBitsToRead: number): string
+	{
+		var bitsRead = this.readBits(numberOfBitsToRead);
+		var bitsReadAsString = bitsRead.join("");
+		return bitsReadAsString;
+	}
+
 	readByte(): number
 	{
 		// todo - Check alignment.
@@ -121,9 +159,11 @@ export class BitStream
 	{
 		var returnValue = 0;
 
-		for (var i = 0; i < numberOfBitsInInteger; i++) {
+		for (var i = 0; i < numberOfBitsInInteger; i++)
+		{
+			var iReversed = numberOfBitsInInteger - i - 1;
 			var bitRead = this.readBit();
-			returnValue |= (bitRead << i);
+			returnValue |= (bitRead << iReversed);
 		}
 
 		return returnValue;

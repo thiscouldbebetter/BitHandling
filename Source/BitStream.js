@@ -50,6 +50,16 @@ var ThisCouldBeBetter;
             hasMoreBits() {
                 return this.byteStream.hasMoreBytes();
             }
+            peekBits(numberOfBitsToPeek) {
+                var byteIndexCurrentToRestore = this.byteStream.byteIndexCurrent;
+                var bitOffsetWithinByteCurrentToRestore = this.bitOffsetWithinByteCurrent;
+                var bitsPeekedAsString = this.readBitsAsString(numberOfBitsToPeek);
+                this.byteStream.byteIndexCurrent =
+                    byteIndexCurrentToRestore;
+                this.bitOffsetWithinByteCurrent =
+                    bitOffsetWithinByteCurrentToRestore;
+                return bitsPeekedAsString;
+            }
             readBit() {
                 this.byteCurrent = this.byteStream.peekByteCurrent();
                 var bitOffsetWithinByteCurrentReversed = BitStream.BitsPerByte - this.bitOffsetWithinByteCurrent - 1;
@@ -63,6 +73,19 @@ var ThisCouldBeBetter;
                 }
                 return returnValue;
             }
+            readBits(numberOfBitsToRead) {
+                var bitsRead = [];
+                for (var i = 0; i < numberOfBitsToRead; i++) {
+                    var bitRead = this.readBit();
+                    bitsRead.push(bitRead);
+                }
+                return bitsRead;
+            }
+            readBitsAsString(numberOfBitsToRead) {
+                var bitsRead = this.readBits(numberOfBitsToRead);
+                var bitsReadAsString = bitsRead.join("");
+                return bitsReadAsString;
+            }
             readByte() {
                 // todo - Check alignment.
                 return this.byteStream.readByte();
@@ -74,8 +97,9 @@ var ThisCouldBeBetter;
             readIntegerFromBits(numberOfBitsInInteger) {
                 var returnValue = 0;
                 for (var i = 0; i < numberOfBitsInInteger; i++) {
+                    var iReversed = numberOfBitsInInteger - i - 1;
                     var bitRead = this.readBit();
-                    returnValue |= (bitRead << i);
+                    returnValue |= (bitRead << iReversed);
                 }
                 return returnValue;
             }
