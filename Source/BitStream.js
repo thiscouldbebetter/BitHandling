@@ -52,7 +52,8 @@ var ThisCouldBeBetter;
             }
             readBit() {
                 this.byteCurrent = this.byteStream.peekByteCurrent();
-                var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
+                var bitOffsetWithinByteCurrentReversed = BitStream.BitsPerByte - this.bitOffsetWithinByteCurrent - 1;
+                var returnValue = (this.byteCurrent >> bitOffsetWithinByteCurrentReversed) & 1;
                 this.bitOffsetWithinByteCurrent++;
                 if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte) {
                     this.bitOffsetWithinByteCurrent = 0;
