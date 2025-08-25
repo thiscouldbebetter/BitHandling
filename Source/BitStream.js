@@ -60,6 +60,11 @@ var ThisCouldBeBetter;
                     bitOffsetWithinByteCurrentToRestore;
                 return bitsPeekedAsString;
             }
+            posAsString() {
+                var returnValue = "0x" + this.byteStream.byteIndexCurrent.toString(16)
+                    + "." + this.bitOffsetWithinByteCurrent;
+                return returnValue;
+            }
             readBit() {
                 this.byteCurrent = this.byteStream.peekByteCurrent();
                 var bitOffsetWithinByteCurrentReversed = BitStream.BitsPerByte - this.bitOffsetWithinByteCurrent - 1;

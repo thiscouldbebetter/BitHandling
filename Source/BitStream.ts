@@ -103,6 +103,14 @@ export class BitStream
 		return bitsPeekedAsString;
 	}
 
+	posAsString(): string
+	{
+		var returnValue =
+			"0x" + this.byteStream.byteIndexCurrent.toString(16)
+			+ "." + this.bitOffsetWithinByteCurrent;
+		return returnValue;
+	}
+
 	readBit(): number
 	{
 		this.byteCurrent = this.byteStream.peekByteCurrent();
