@@ -11,21 +11,33 @@ export class BitStream
 	bitOffsetWithinByteCurrent: number;
 	byteCurrent: number;
 
-	constructor(byteStream: ByteStream)
-	{
-		if (byteStream == null)
-		{
-			byteStream = new ByteStream([]);
-		}
+	bitsShouldNotBeReversed: boolean;
 
-		this.byteStream = byteStream;
+	constructor(byteStream: ByteStream, bitsShouldNotBeReversed: boolean)
+	{
+		this.byteStream = byteStream || new ByteStream([]);
+		this.bitsShouldNotBeReversed = bitsShouldNotBeReversed || false;
 		this.bitOffsetWithinByteCurrent = 0;
 		this.byteCurrent = 0;
 	}
 
+	static fromByteStream(byteStream: ByteStream): BitStream
+	{
+		return new BitStream(byteStream, null);
+	}
+
+	static fromByteStreamAndBitsShouldNotBeReversed
+	(
+		byteStream: ByteStream,
+		bitsShouldNotBeReversed: boolean
+	): BitStream
+	{
+		return new BitStream(byteStream, bitsShouldNotBeReversed);
+	}
+
 	static fromBytes(bytes: number[]): BitStream
 	{
-		return new BitStream(ByteStream.fromBytes(bytes) );
+		return new BitStream(ByteStream.fromBytes(bytes), null);
 	}
 
 	static convertNumberToBitString(numberToConvert: number)
@@ -113,6 +125,36 @@ export class BitStream
 
 	readBit(): number
 	{
+		var returnValue =
+			this.bitsShouldNotBeReversed
+			? this.readBitNonReversed()
+			: this.readBitReversed();
+		return returnValue;
+	}
+
+	readBitNonReversed(): number
+	{
+		// Taken from Storage/Compressor/BitStream.ts.
+		// Does not reverse the i.
+
+		this.byteCurrent = this.byteStream.peekByteCurrent();
+		var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
+		this.bitOffsetWithinByteCurrent++;
+
+		if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte)
+		{
+			//this.byteOffset++;
+			this.bitOffsetWithinByteCurrent = 0;
+			if (this.byteStream.hasMoreBytes())
+			{
+				this.byteCurrent = this.byteStream.readByte();
+			}
+		}
+		return returnValue;
+	}
+
+	readBitReversed(): number
+	{
 		this.byteCurrent = this.byteStream.peekByteCurrent();
 		var bitOffsetWithinByteCurrentReversed =
 			BitStream.BitsPerByte - this.bitOffsetWithinByteCurrent - 1;
@@ -164,6 +206,31 @@ export class BitStream
 	}
 
 	readIntegerFromBits(numberOfBitsInInteger: number): number
+	{
+		var returnValue =
+			this.bitsShouldNotBeReversed
+			? this.readIntegerFromBitsNonReversed(numberOfBitsInInteger)
+			: this.readIntegerFromBitsReversed(numberOfBitsInInteger);
+		return returnValue;
+	}
+
+	readIntegerFromBitsNonReversed(numberOfBitsInNumber: number): number
+	{
+		// Taken from Storage/Compressor/BitStream.ts.
+		// Does not reverse the i.
+
+		var returnValue = 0;
+
+		for (var i = 0; i < numberOfBitsInNumber; i++)
+		{
+			var bitRead = this.readBit();
+			returnValue |= (bitRead << i);
+		}
+
+		return returnValue;
+	}
+
+	readIntegerFromBitsReversed(numberOfBitsInInteger: number): number
 	{
 		var returnValue = 0;
 

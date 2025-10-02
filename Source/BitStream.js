@@ -4,16 +4,20 @@ var ThisCouldBeBetter;
     var BitHandling;
     (function (BitHandling) {
         class BitStream {
-            constructor(byteStream) {
-                if (byteStream == null) {
-                    byteStream = new BitHandling.ByteStream([]);
-                }
-                this.byteStream = byteStream;
+            constructor(byteStream, bitsShouldNotBeReversed) {
+                this.byteStream = byteStream || new BitHandling.ByteStream([]);
+                this.bitsShouldNotBeReversed = bitsShouldNotBeReversed || false;
                 this.bitOffsetWithinByteCurrent = 0;
                 this.byteCurrent = 0;
             }
+            static fromByteStream(byteStream) {
+                return new BitStream(byteStream, null);
+            }
+            static fromByteStreamAndBitsShouldNotBeReversed(byteStream, bitsShouldNotBeReversed) {
+                return new BitStream(byteStream, bitsShouldNotBeReversed);
+            }
             static fromBytes(bytes) {
-                return new BitStream(BitHandling.ByteStream.fromBytes(bytes));
+                return new BitStream(BitHandling.ByteStream.fromBytes(bytes), null);
             }
             static convertNumberToBitString(numberToConvert) {
                 var returnValue = "";
@@ -66,6 +70,27 @@ var ThisCouldBeBetter;
                 return returnValue;
             }
             readBit() {
+                var returnValue = this.bitsShouldNotBeReversed
+                    ? this.readBitNonReversed()
+                    : this.readBitReversed();
+                return returnValue;
+            }
+            readBitNonReversed() {
+                // Taken from Storage/Compressor/BitStream.ts.
+                // Does not reverse the i.
+                this.byteCurrent = this.byteStream.peekByteCurrent();
+                var returnValue = (this.byteCurrent >> this.bitOffsetWithinByteCurrent) & 1;
+                this.bitOffsetWithinByteCurrent++;
+                if (this.bitOffsetWithinByteCurrent >= BitStream.BitsPerByte) {
+                    //this.byteOffset++;
+                    this.bitOffsetWithinByteCurrent = 0;
+                    if (this.byteStream.hasMoreBytes()) {
+                        this.byteCurrent = this.byteStream.readByte();
+                    }
+                }
+                return returnValue;
+            }
+            readBitReversed() {
                 this.byteCurrent = this.byteStream.peekByteCurrent();
                 var bitOffsetWithinByteCurrentReversed = BitStream.BitsPerByte - this.bitOffsetWithinByteCurrent - 1;
                 var returnValue = (this.byteCurrent >> bitOffsetWithinByteCurrentReversed) & 1;
@@ -100,6 +125,22 @@ var ThisCouldBeBetter;
                 return this.byteStream.readBytes(bytesCount);
             }
             readIntegerFromBits(numberOfBitsInInteger) {
+                var returnValue = this.bitsShouldNotBeReversed
+                    ? this.readIntegerFromBitsNonReversed(numberOfBitsInInteger)
+                    : this.readIntegerFromBitsReversed(numberOfBitsInInteger);
+                return returnValue;
+            }
+            readIntegerFromBitsNonReversed(numberOfBitsInNumber) {
+                // Taken from Storage/Compressor/BitStream.ts.
+                // Does not reverse the i.
+                var returnValue = 0;
+                for (var i = 0; i < numberOfBitsInNumber; i++) {
+                    var bitRead = this.readBit();
+                    returnValue |= (bitRead << i);
+                }
+                return returnValue;
+            }
+            readIntegerFromBitsReversed(numberOfBitsInInteger) {
                 var returnValue = 0;
                 for (var i = 0; i < numberOfBitsInInteger; i++) {
                     var iReversed = numberOfBitsInInteger - i - 1;
